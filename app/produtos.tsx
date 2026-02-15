@@ -16,7 +16,7 @@ export default function Produtos() {
         const novoProduto = {
             id: Date.now().toString(),
             nome,
-            preco: parseFloat(preco),
+            preco: parseFloat(preco.replace(",", ".")),
             estoque: parseInt(estoque),
         };
 
@@ -75,7 +75,10 @@ export default function Produtos() {
                         </Text>
 
                         <Text style={globalStyles.cardPreco}>
-                            R$ {item.preco.toFixed(2)}
+                            {item.preco.toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                            })}
                         </Text>
 
                         <Text

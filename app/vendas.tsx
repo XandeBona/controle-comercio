@@ -95,7 +95,10 @@ export default function Vendas() {
                     <View style={globalStyles.card}>
                         <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
                         <Text style={globalStyles.cardPreco}>
-                            R$ {item.preco.toFixed(2)}
+                            {item.preco.toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                            })}
                         </Text>
                         <Text style={globalStyles.cardEstoque}>
                             Estoque: {item.estoque}
@@ -142,13 +145,19 @@ export default function Vendas() {
                         {item.quantidade} x R$ {item.preco.toFixed(2)}
                     </Text>
                     <Text>
-                        Subtotal: R$ {(item.quantidade * item.preco).toFixed(2)}
+                        Subtotal: R$ {(item.quantidade * item.preco).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                        })}
                     </Text>
                 </View>
             ))}
 
             <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 10 }}>
-                Total: R$ {calcularTotal().toFixed(2)}
+                Total: R$ {calcularTotal().toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                })}
             </Text>
 
             <TouchableOpacity
