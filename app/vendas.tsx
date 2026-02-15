@@ -24,36 +24,45 @@ export default function Vendas() {
     const [quantidades, setQuantidades] = useState<{ [key: string]: string }>({});
 
     function adicionarAoCarrinho(id: string, nome: string, preco: number, estoque: number) {
-        const quantidade = parseInt(quantidades[id]);
+        const quantidadeDigitada = parseInt(quantidades[id]);
 
-        if (!quantidade || quantidade <= 0) {
+        if (!quantidadeDigitada || quantidadeDigitada <= 0) {
             Alert.alert("Digite uma quantidade válida");
             return;
         }
 
-        if (quantidade > estoque) {
-            Alert.alert("Quantidade maior que o estoque disponível");
+        const itemExistente = carrinho.find((item) => item.id === id);
+        const quantidadeJaNoCarrinho = itemExistente ? itemExistente.quantidade : 0;
+
+        if (quantidadeDigitada + quantidadeJaNoCarrinho > estoque) {
+            Alert.alert("Quantidade total excede o estoque disponível");
             return;
         }
-
-        const itemExistente = carrinho.find((item) => item.id === id);
 
         if (itemExistente) {
             setCarrinho((prev) =>
                 prev.map((item) =>
                     item.id === id
-                        ? { ...item, quantidade: item.quantidade + quantidade }
+                        ? { ...item, quantidade: item.quantidade + quantidadeDigitada }
                         : item
                 )
             );
         } else {
             setCarrinho((prev) => [
                 ...prev,
-                { id, nome, preco, quantidade },
+                { id, nome, preco, quantidade: quantidadeDigitada },
             ]);
         }
 
         setQuantidades({ ...quantidades, [id]: "" });
+    }
+
+    function removerItem(id: string) {
+        setCarrinho((prev) => prev.filter((item) => item.id !== id));
+    }
+
+    function limparCarrinho() {
+        setCarrinho([]);
     }
 
     function calcularTotal() {
@@ -63,12 +72,26 @@ export default function Vendas() {
         );
     }
 
-    function finalizarVenda() {
+    function confirmarFinalizacao() {
         if (carrinho.length === 0) {
             Alert.alert("Carrinho vazio");
             return;
         }
 
+        Alert.alert(
+            "Confirmar Venda",
+            `Total: ${calcularTotal().toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+            })}`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                { text: "Confirmar", onPress: finalizarVenda },
+            ]
+        );
+    }
+
+    function finalizarVenda() {
         carrinho.forEach((item) => {
             const produto = produtos.find((p) => p.id === item.id);
             if (produto) {
@@ -94,12 +117,14 @@ export default function Vendas() {
                 renderItem={({ item }) => (
                     <View style={globalStyles.card}>
                         <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
+
                         <Text style={globalStyles.cardPreco}>
                             {item.preco.toLocaleString("pt-BR", {
                                 style: "currency",
                                 currency: "BRL",
                             })}
                         </Text>
+
                         <Text style={globalStyles.cardEstoque}>
                             Estoque: {item.estoque}
                         </Text>
@@ -141,31 +166,57 @@ export default function Vendas() {
             {carrinho.map((item) => (
                 <View key={item.id} style={globalStyles.card}>
                     <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
+
                     <Text>
-                        {item.quantidade} x R$ {item.preco.toFixed(2)}
-                    </Text>
-                    <Text>
-                        Subtotal: R$ {(item.quantidade * item.preco).toLocaleString("pt-BR", {
+                        {item.quantidade} x{" "}
+                        {item.preco.toLocaleString("pt-BR", {
                             style: "currency",
                             currency: "BRL",
                         })}
                     </Text>
+
+                    <Text>
+                        Subtotal:{" "}
+                        {(item.quantidade * item.preco).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                        })}
+                    </Text>
+
+                    <TouchableOpacity
+                        style={[globalStyles.botao, { backgroundColor: "#b00020", marginTop: 5 }]}
+                        onPress={() => removerItem(item.id)}
+                    >
+                        <Text style={globalStyles.botaoTexto}>Remover</Text>
+                    </TouchableOpacity>
                 </View>
             ))}
 
-            <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 10 }}>
-                Total: R$ {calcularTotal().toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                })}
-            </Text>
+            {carrinho.length > 0 && (
+                <>
+                    <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 10 }}>
+                        Total:{" "}
+                        {calcularTotal().toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                        })}
+                    </Text>
 
-            <TouchableOpacity
-                style={[globalStyles.botao, { marginTop: 10 }]}
-                onPress={finalizarVenda}
-            >
-                <Text style={globalStyles.botaoTexto}>Finalizar Venda</Text>
-            </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[globalStyles.botao, { marginTop: 10 }]}
+                        onPress={confirmarFinalizacao}
+                    >
+                        <Text style={globalStyles.botaoTexto}>Finalizar Venda</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[globalStyles.botao, { backgroundColor: "#555", marginTop: 5 }]}
+                        onPress={limparCarrinho}
+                    >
+                        <Text style={globalStyles.botaoTexto}>Limpar Carrinho</Text>
+                    </TouchableOpacity>
+                </>
+            )}
         </View>
     );
 }
