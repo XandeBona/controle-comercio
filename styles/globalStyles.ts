@@ -38,6 +38,18 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  botaoCarrinhoSup: {
+    backgroundColor: "#858585",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  botaoCarrinho: {
+    backgroundColor: "#858585",
+  },
+
   card: {
     backgroundColor: "#ffffff",
     padding: 15,

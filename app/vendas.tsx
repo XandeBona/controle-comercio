@@ -1,222 +1,164 @@
 import { useState } from "react";
 import {
-    Alert,
-    FlatList,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import { useRouter } from "expo-router";
+import { useCarrinho } from "../context/CarrinhoContext";
 import { useProdutos } from "../context/ProdutosContext";
 import { globalStyles } from "../styles/globalStyles";
 
-type ItemCarrinho = {
-    id: string;
-    nome: string;
-    preco: number;
-    quantidade: number;
-};
-
 export default function Vendas() {
-    const { produtos, atualizarEstoque } = useProdutos();
+  const router = useRouter();
 
-    const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
-    const [quantidades, setQuantidades] = useState<{ [key: string]: string }>({});
+  const { produtos } = useProdutos();
+  const { carrinho, adicionarItem } = useCarrinho();
 
-    function adicionarAoCarrinho(id: string, nome: string, preco: number, estoque: number) {
-        const quantidadeDigitada = parseInt(quantidades[id]);
+  const [quantidades, setQuantidades] = useState<{ [key: string]: string }>(
+    {}
+  );
 
-        if (!quantidadeDigitada || quantidadeDigitada <= 0) {
-            Alert.alert("Digite uma quantidade válida");
-            return;
-        }
+  function adicionarAoCarrinho(
+    id: string,
+    nome: string,
+    preco: number,
+    estoque: number
+  ) {
+    const quantidadeDigitada = parseInt(quantidades[id]);
 
-        const itemExistente = carrinho.find((item) => item.id === id);
-        const quantidadeJaNoCarrinho = itemExistente ? itemExistente.quantidade : 0;
-
-        if (quantidadeDigitada + quantidadeJaNoCarrinho > estoque) {
-            Alert.alert("Quantidade total excede o estoque disponível");
-            return;
-        }
-
-        if (itemExistente) {
-            setCarrinho((prev) =>
-                prev.map((item) =>
-                    item.id === id
-                        ? { ...item, quantidade: item.quantidade + quantidadeDigitada }
-                        : item
-                )
-            );
-        } else {
-            setCarrinho((prev) => [
-                ...prev,
-                { id, nome, preco, quantidade: quantidadeDigitada },
-            ]);
-        }
-
-        setQuantidades({ ...quantidades, [id]: "" });
+    if (!quantidadeDigitada || quantidadeDigitada <= 0) {
+      Alert.alert("Digite uma quantidade válida");
+      return;
     }
 
-    function removerItem(id: string) {
-        setCarrinho((prev) => prev.filter((item) => item.id !== id));
+    const itemCarrinho = carrinho.find(i => i.id === id);
+    const jaNoCarrinho = itemCarrinho ? itemCarrinho.quantidade : 0;
+
+    const estoqueDisponivel = estoque - jaNoCarrinho;
+
+    if (quantidadeDigitada > estoqueDisponivel) {
+      Alert.alert(
+        `Estoque insuficiente. Disponível: ${estoqueDisponivel}`
+      );
+      return;
     }
 
-    function limparCarrinho() {
-        setCarrinho([]);
-    }
+    adicionarItem({
+      id,
+      nome,
+      preco,
+      quantidade: quantidadeDigitada,
+    });
 
-    function calcularTotal() {
-        return carrinho.reduce(
-            (total, item) => total + item.preco * item.quantidade,
-            0
-        );
-    }
+    setQuantidades({ ...quantidades, [id]: "" });
+  }
 
-    function confirmarFinalizacao() {
-        if (carrinho.length === 0) {
-            Alert.alert("Carrinho vazio");
-            return;
-        }
+  const totalItens = carrinho.reduce(
+    (acc, item) => acc + item.quantidade,
+    0
+  );
 
-        Alert.alert(
-            "Confirmar Venda",
-            `Total: ${calcularTotal().toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-            })}`,
-            [
-                { text: "Cancelar", style: "cancel" },
-                { text: "Confirmar", onPress: finalizarVenda },
-            ]
-        );
-    }
+  return (
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.titulo}>Vendas</Text>
 
-    function finalizarVenda() {
-        carrinho.forEach((item) => {
-            const produto = produtos.find((p) => p.id === item.id);
-            if (produto) {
-                atualizarEstoque(
-                    produto.id,
-                    produto.estoque - item.quantidade
-                );
-            }
-        });
+      <FlatList
+        data={produtos}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        renderItem={({ item }) => {
+          const itemCarrinho = carrinho.find(i => i.id === item.id);
+          const jaNoCarrinho = itemCarrinho
+            ? itemCarrinho.quantidade
+            : 0;
 
-        setCarrinho([]);
-        Alert.alert("Venda realizada com sucesso!");
-    }
+          const estoqueDisponivel = item.estoque - jaNoCarrinho;
 
-    return (
-        <View style={globalStyles.container}>
-            <Text style={globalStyles.titulo}>Vendas</Text>
+          return (
+            <View style={globalStyles.card}>
+              <Text style={globalStyles.cardTitulo}>
+                {item.nome}
+              </Text>
 
-            {/* LISTA DE PRODUTOS */}
-            <FlatList
-                data={produtos}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <View style={globalStyles.card}>
-                        <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
+              <Text style={globalStyles.cardPreco}>
+                {item.preco.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </Text>
 
-                        <Text style={globalStyles.cardPreco}>
-                            {item.preco.toLocaleString("pt-BR", {
-                                style: "currency",
-                                currency: "BRL",
-                            })}
-                        </Text>
+              <Text
+                style={[
+                  globalStyles.cardEstoque,
+                  estoqueDisponivel > 0
+                    ? globalStyles.estoqueDisponivel
+                    : globalStyles.estoqueEsgotado,
+                ]}
+              >
+                Disponível: {estoqueDisponivel}
+              </Text>
 
-                        <Text style={globalStyles.cardEstoque}>
-                            Estoque: {item.estoque}
-                        </Text>
+              <TextInput
+                placeholder="Qtd"
+                keyboardType="numeric"
+                value={quantidades[item.id] || ""}
+                onChangeText={(text) =>
+                  setQuantidades({
+                    ...quantidades,
+                    [item.id]: text,
+                  })
+                }
+                style={globalStyles.input}
+              />
 
-                        <TextInput
-                            placeholder="Qtd"
-                            keyboardType="numeric"
-                            value={quantidades[item.id] || ""}
-                            onChangeText={(text) =>
-                                setQuantidades({ ...quantidades, [item.id]: text })
-                            }
-                            style={globalStyles.input}
-                        />
+              <TouchableOpacity
+                style={[
+                  globalStyles.botao,
+                  estoqueDisponivel === 0 && {
+                    backgroundColor: "#999",
+                  },
+                ]}
+                disabled={estoqueDisponivel === 0}
+                onPress={() =>
+                  adicionarAoCarrinho(
+                    item.id,
+                    item.nome,
+                    item.preco,
+                    item.estoque
+                  )
+                }
+              >
+                <Text style={globalStyles.botaoTexto}>
+                  {estoqueDisponivel === 0
+                    ? "Sem estoque"
+                    : "Adicionar ao Carrinho"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        }}
+      />
 
-                        <TouchableOpacity
-                            style={globalStyles.botao}
-                            onPress={() =>
-                                adicionarAoCarrinho(
-                                    item.id,
-                                    item.nome,
-                                    item.preco,
-                                    item.estoque
-                                )
-                            }
-                        >
-                            <Text style={globalStyles.botaoTexto}>
-                                Adicionar ao Carrinho
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            />
-
-            {/* CARRINHO */}
-            <Text style={[globalStyles.titulo, { marginTop: 20 }]}>
-                Carrinho
-            </Text>
-
-            {carrinho.map((item) => (
-                <View key={item.id} style={globalStyles.card}>
-                    <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
-
-                    <Text>
-                        {item.quantidade} x{" "}
-                        {item.preco.toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                        })}
-                    </Text>
-
-                    <Text>
-                        Subtotal:{" "}
-                        {(item.quantidade * item.preco).toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                        })}
-                    </Text>
-
-                    <TouchableOpacity
-                        style={[globalStyles.botao, { backgroundColor: "#b00020", marginTop: 5 }]}
-                        onPress={() => removerItem(item.id)}
-                    >
-                        <Text style={globalStyles.botaoTexto}>Remover</Text>
-                    </TouchableOpacity>
-                </View>
-            ))}
-
-            {carrinho.length > 0 && (
-                <>
-                    <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 10 }}>
-                        Total:{" "}
-                        {calcularTotal().toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                        })}
-                    </Text>
-
-                    <TouchableOpacity
-                        style={[globalStyles.botao, { marginTop: 10 }]}
-                        onPress={confirmarFinalizacao}
-                    >
-                        <Text style={globalStyles.botaoTexto}>Finalizar Venda</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[globalStyles.botao, { backgroundColor: "#555", marginTop: 5 }]}
-                        onPress={limparCarrinho}
-                    >
-                        <Text style={globalStyles.botaoTexto}>Limpar Carrinho</Text>
-                    </TouchableOpacity>
-                </>
-            )}
-        </View>
-    );
+      <TouchableOpacity
+        style={{
+          ...globalStyles.botaoCarrinhoSup,
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          borderRadius: 30,
+          paddingHorizontal: 18,
+        }}
+        onPress={() => router.push("/carrinho")}
+      >
+        <Text style={globalStyles.botaoCarrinho}>
+          Carrinho ({totalItens})
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
