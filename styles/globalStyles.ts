@@ -8,7 +8,7 @@ export const globalStyles = StyleSheet.create({
   },
 
   titulo: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
@@ -36,7 +36,6 @@ export const globalStyles = StyleSheet.create({
   botaoTexto: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
   },
 
   card: {
@@ -72,5 +71,20 @@ export const globalStyles = StyleSheet.create({
 
   estoqueEsgotado: {
     color: "#d32f2f",
+  },
+
+  totalBox: {
+    marginTop: 10,
+    padding: 15,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+
+  totalTexto: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

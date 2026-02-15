@@ -1,166 +1,162 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
+    Alert,
     FlatList,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import { useProdutos } from "../context/ProdutosContext";
+import { globalStyles } from "../styles/globalStyles";
+
+type ItemCarrinho = {
+    id: string;
+    nome: string;
+    preco: number;
+    quantidade: number;
+};
 
 export default function Vendas() {
-  // Produtos mockados por enquanto
-  const [produtos, setProdutos] = useState([
-    { id: "1", nome: "Coca-Cola", preco: 5, estoque: 10 },
-    { id: "2", nome: "Arroz", preco: 20, estoque: 5 },
-  ]);
+    const { produtos, atualizarEstoque } = useProdutos();
 
-  const [produtoSelecionado, setProdutoSelecionado] = useState<any>(null);
-  const [quantidade, setQuantidade] = useState("");
-  const [total, setTotal] = useState(0);
+    const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
+    const [quantidades, setQuantidades] = useState<{ [key: string]: string }>({});
 
-  useEffect(() => {
-    if (produtoSelecionado && quantidade) {
-      setTotal(produtoSelecionado.preco * parseInt(quantidade));
-    } else {
-      setTotal(0);
+    function adicionarAoCarrinho(id: string, nome: string, preco: number, estoque: number) {
+        const quantidade = parseInt(quantidades[id]);
+
+        if (!quantidade || quantidade <= 0) {
+            Alert.alert("Digite uma quantidade válida");
+            return;
+        }
+
+        if (quantidade > estoque) {
+            Alert.alert("Quantidade maior que o estoque disponível");
+            return;
+        }
+
+        const itemExistente = carrinho.find((item) => item.id === id);
+
+        if (itemExistente) {
+            setCarrinho((prev) =>
+                prev.map((item) =>
+                    item.id === id
+                        ? { ...item, quantidade: item.quantidade + quantidade }
+                        : item
+                )
+            );
+        } else {
+            setCarrinho((prev) => [
+                ...prev,
+                { id, nome, preco, quantidade },
+            ]);
+        }
+
+        setQuantidades({ ...quantidades, [id]: "" });
     }
-  }, [quantidade, produtoSelecionado]);
 
-  function confirmarVenda() {
-    if (!produtoSelecionado || !quantidade) return;
-
-    const qtd = parseInt(quantidade);
-
-    if (qtd > produtoSelecionado.estoque) {
-      alert("Estoque insuficiente!");
-      return;
+    function calcularTotal() {
+        return carrinho.reduce(
+            (total, item) => total + item.preco * item.quantidade,
+            0
+        );
     }
 
-    const novosProdutos = produtos.map((p) =>
-      p.id === produtoSelecionado.id
-        ? { ...p, estoque: p.estoque - qtd }
-        : p
-    );
+    function finalizarVenda() {
+        if (carrinho.length === 0) {
+            Alert.alert("Carrinho vazio");
+            return;
+        }
 
-    setProdutos(novosProdutos);
-    setProdutoSelecionado(null);
-    setQuantidade("");
-    setTotal(0);
+        carrinho.forEach((item) => {
+            const produto = produtos.find((p) => p.id === item.id);
+            if (produto) {
+                atualizarEstoque(
+                    produto.id,
+                    produto.estoque - item.quantidade
+                );
+            }
+        });
 
-    alert("Venda realizada com sucesso!");
-  }
+        setCarrinho([]);
+        Alert.alert("Venda realizada com sucesso!");
+    }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>💰 Nova Venda</Text>
+    return (
+        <View style={globalStyles.container}>
+            <Text style={globalStyles.titulo}>Vendas</Text>
 
-      <Text style={styles.subtitulo}>Selecione um produto:</Text>
+            {/* LISTA DE PRODUTOS */}
+            <FlatList
+                data={produtos}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <View style={globalStyles.card}>
+                        <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
+                        <Text style={globalStyles.cardPreco}>
+                            R$ {item.preco.toFixed(2)}
+                        </Text>
+                        <Text style={globalStyles.cardEstoque}>
+                            Estoque: {item.estoque}
+                        </Text>
 
-      <FlatList
-        data={produtos}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.card,
-              produtoSelecionado?.id === item.id && styles.cardSelecionado,
-            ]}
-            onPress={() => setProdutoSelecionado(item)}
-          >
-            <Text style={styles.nome}>{item.nome}</Text>
-            <Text>R$ {item.preco.toFixed(2)}</Text>
-            <Text>Estoque: {item.estoque}</Text>
-          </TouchableOpacity>
-        )}
-      />
+                        <TextInput
+                            placeholder="Qtd"
+                            keyboardType="numeric"
+                            value={quantidades[item.id] || ""}
+                            onChangeText={(text) =>
+                                setQuantidades({ ...quantidades, [item.id]: text })
+                            }
+                            style={globalStyles.input}
+                        />
 
-      {produtoSelecionado && (
-        <View style={styles.vendaBox}>
-          <Text style={styles.label}>Quantidade:</Text>
+                        <TouchableOpacity
+                            style={globalStyles.botao}
+                            onPress={() =>
+                                adicionarAoCarrinho(
+                                    item.id,
+                                    item.nome,
+                                    item.preco,
+                                    item.estoque
+                                )
+                            }
+                        >
+                            <Text style={globalStyles.botaoTexto}>
+                                Adicionar ao Carrinho
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            />
 
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={quantidade}
-            onChangeText={setQuantidade}
-            placeholder="Digite a quantidade"
-            placeholderTextColor="#666"
-          />
+            {/* CARRINHO */}
+            <Text style={[globalStyles.titulo, { marginTop: 20 }]}>
+                Carrinho
+            </Text>
 
-          <Text style={styles.total}>Total: R$ {total.toFixed(2)}</Text>
+            {carrinho.map((item) => (
+                <View key={item.id} style={globalStyles.card}>
+                    <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
+                    <Text>
+                        {item.quantidade} x R$ {item.preco.toFixed(2)}
+                    </Text>
+                    <Text>
+                        Subtotal: R$ {(item.quantidade * item.preco).toFixed(2)}
+                    </Text>
+                </View>
+            ))}
 
-          <TouchableOpacity style={styles.botao} onPress={confirmarVenda}>
-            <Text style={styles.botaoTexto}>Confirmar Venda</Text>
-          </TouchableOpacity>
+            <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 10 }}>
+                Total: R$ {calcularTotal().toFixed(2)}
+            </Text>
+
+            <TouchableOpacity
+                style={[globalStyles.botao, { marginTop: 10 }]}
+                onPress={finalizarVenda}
+            >
+                <Text style={globalStyles.botaoTexto}>Finalizar Venda</Text>
+            </TouchableOpacity>
         </View>
-      )}
-    </View>
-  );
+    );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#f4f6f9",
-  },
-  titulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 15,
-    textAlign: "center",
-  },
-  subtitulo: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  card: {
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 3,
-  },
-  cardSelecionado: {
-    borderWidth: 2,
-    borderColor: "#1e88e5",
-  },
-  nome: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#1e88e5",
-  },
-  vendaBox: {
-    marginTop: 20,
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
-    elevation: 3,
-  },
-  label: {
-    marginBottom: 5,
-  },
-  input: {
-    backgroundColor: "#eee",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-    color: "#000",
-  },
-  total: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  botao: {
-    backgroundColor: "#1e88e5",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  botaoTexto: {
-    color: "white",
-    fontWeight: "bold",
-  },
-});

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useProdutos } from "../context/ProdutosContext";
 import { globalStyles } from "../styles/globalStyles";
 
 export default function Produtos() {
     const [nome, setNome] = useState("");
     const [preco, setPreco] = useState("");
     const [estoque, setEstoque] = useState("");
-    const [produtos, setProdutos] = useState<any[]>([]);
+
+    const { produtos, setProdutos } = useProdutos();
 
     function adicionarProduto() {
         if (!nome || !preco || !estoque) return;
@@ -54,8 +56,13 @@ export default function Produtos() {
                 style={globalStyles.input}
             />
 
-            <TouchableOpacity style={globalStyles.botao} onPress={adicionarProduto}>
-                <Text style={globalStyles.botaoTexto}>Adicionar Produto</Text>
+            <TouchableOpacity
+                style={globalStyles.botao}
+                onPress={adicionarProduto}
+            >
+                <Text style={globalStyles.botaoTexto}>
+                    Adicionar Produto
+                </Text>
             </TouchableOpacity>
 
             <FlatList
@@ -63,7 +70,10 @@ export default function Produtos() {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <View style={globalStyles.card}>
-                        <Text style={globalStyles.cardTitulo}>{item.nome}</Text>
+                        <Text style={globalStyles.cardTitulo}>
+                            {item.nome}
+                        </Text>
+
                         <Text style={globalStyles.cardPreco}>
                             R$ {item.preco.toFixed(2)}
                         </Text>
