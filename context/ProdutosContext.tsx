@@ -1,4 +1,17 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  atualizarEstoque as atualizarEstoqueDB,
+  atualizarProduto,
+  buscarProdutos,
+  inserirProduto,
+} from "../database/produtosRepository";
 
 export type Produto = {
   id: string;
@@ -23,25 +36,30 @@ type ProdutosContextType = {
 const ProdutosContext = createContext({} as ProdutosContextType);
 
 export function ProdutosProvider({ children }: { children: ReactNode }) {
-  const [produtos, setProdutos] = useState<Produto[]>([
-    {
-      id: "1",
-      nome: "Coca-Cola Lata",
-      preco: 5,
-      estoque: 20,
-      ativo: true,
-    },
-    {
-      id: "2",
-      nome: "Salgado",
-      preco: 8,
-      estoque: 15,
-      ativo: true,
-    },
-  ]);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
+
+  function carregarProdutos() {
+    const dados = buscarProdutos();
+
+    const formatados = dados.map(prod => ({
+      ...prod,
+      ativo: Boolean(prod.ativo),
+    }));
+
+    setProdutos(formatados);
+  }
 
   function adicionarProduto(produto: Produto) {
-    setProdutos(prev => [...prev, produto]);
+    inserirProduto({
+      ...produto,
+      ativo: produto.ativo ? 1 : 0,
+    });
+
+    carregarProdutos();
   }
 
   function editarProduto(
@@ -49,33 +67,34 @@ export function ProdutosProvider({ children }: { children: ReactNode }) {
     novoNome: string,
     novoEstoque: number
   ) {
-    setProdutos(prev =>
-      prev.map(prod =>
-        prod.id === id
-          ? { ...prod, nome: novoNome, estoque: novoEstoque }
-          : prod
-      )
-    );
+    const produto = produtos.find(p => p.id === id);
+    if (!produto) return;
+
+    atualizarProduto({
+      ...produto,
+      nome: novoNome,
+      estoque: novoEstoque,
+      ativo: produto.ativo ? 1 : 0,
+    });
+
+    carregarProdutos();
   }
 
   function atualizarEstoque(id: string, novoEstoque: number) {
-    setProdutos(prev =>
-      prev.map(prod =>
-        prod.id === id
-          ? { ...prod, estoque: novoEstoque }
-          : prod
-      )
-    );
+    atualizarEstoqueDB(id, novoEstoque);
+    carregarProdutos();
   }
 
   function alternarStatus(id: string) {
-    setProdutos(prev =>
-      prev.map(prod =>
-        prod.id === id
-          ? { ...prod, ativo: !prod.ativo }
-          : prod
-      )
-    );
+    const produto = produtos.find(p => p.id === id);
+    if (!produto) return;
+
+    atualizarProduto({
+      ...produto,
+      ativo: produto.ativo ? 0 : 1,
+    });
+
+    carregarProdutos();
   }
 
   return (

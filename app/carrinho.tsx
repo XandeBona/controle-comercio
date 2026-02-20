@@ -101,7 +101,6 @@ export default function Carrinho() {
                 )}
             />
 
-            {/* 🔥 rodapé fixo */}
             <View
                 style={{
                     position: "absolute",
