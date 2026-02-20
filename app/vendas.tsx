@@ -36,7 +36,7 @@ export default function Vendas() {
       return;
     }
 
-    const itemCarrinho = carrinho.find(i => i.id === id);
+    const itemCarrinho = carrinho.find((i) => i.id === id);
     const jaNoCarrinho = itemCarrinho ? itemCarrinho.quantidade : 0;
 
     const estoqueDisponivel = estoque - jaNoCarrinho;
@@ -63,16 +63,18 @@ export default function Vendas() {
     0
   );
 
+  const produtosAtivos = produtos.filter((produto) => produto.ativo);
+
   return (
     <View style={globalStyles.container}>
       <Text style={globalStyles.titulo}>Vendas</Text>
 
       <FlatList
-        data={produtos}
+        data={produtosAtivos}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
         renderItem={({ item }) => {
-          const itemCarrinho = carrinho.find(i => i.id === item.id);
+          const itemCarrinho = carrinho.find((i) => i.id === item.id);
           const jaNoCarrinho = itemCarrinho
             ? itemCarrinho.quantidade
             : 0;

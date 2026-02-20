@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    Alert,
+    FlatList,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useProdutos } from "../context/ProdutosContext";
 import { globalStyles } from "../styles/globalStyles";
 
@@ -7,23 +14,63 @@ export default function Produtos() {
     const [nome, setNome] = useState("");
     const [preco, setPreco] = useState("");
     const [estoque, setEstoque] = useState("");
+    const [editandoId, setEditandoId] = useState<string | null>(null);
 
-    const { produtos, setProdutos } = useProdutos();
+    const {
+        produtos,
+        adicionarProduto,
+        editarProduto,
+        alternarStatus,
+    } = useProdutos();
 
-    function adicionarProduto() {
-        if (!nome || !preco || !estoque) return;
-
-        const novoProduto = {
-            id: Date.now().toString(),
-            nome,
-            preco: parseFloat(preco.replace(",", ".")),
-            estoque: parseInt(estoque),
-        };
-
-        setProdutos([...produtos, novoProduto]);
+    function limparCampos() {
         setNome("");
         setPreco("");
         setEstoque("");
+        setEditandoId(null);
+    }
+
+    function salvarProduto() {
+        if (!nome) {
+            Alert.alert("Erro", "Digite o nome.");
+            return;
+        }
+
+        if (editandoId) {
+            // EDITA APENAS O NOME
+            editarProduto(editandoId, nome);
+            Alert.alert("Sucesso", "Nome atualizado!");
+        } else {
+            if (!preco || !estoque) {
+                Alert.alert("Erro", "Preencha todos os campos.");
+                return;
+            }
+
+            const precoConvertido = parseFloat(preco.replace(",", "."));
+            const estoqueConvertido = parseInt(estoque);
+
+            if (isNaN(precoConvertido) || isNaN(estoqueConvertido)) {
+                Alert.alert("Erro", "Valores inválidos.");
+                return;
+            }
+
+            adicionarProduto({
+                id: Date.now().toString(),
+                nome,
+                preco: precoConvertido,
+                estoque: estoqueConvertido,
+                ativo: true,
+            });
+
+            Alert.alert("Sucesso", "Produto adicionado!");
+        }
+
+        limparCampos();
+    }
+
+    function iniciarEdicao(produto: any) {
+        setNome(produto.nome);
+        setEditandoId(produto.id);
     }
 
     return (
@@ -38,30 +85,34 @@ export default function Produtos() {
                 style={globalStyles.input}
             />
 
-            <TextInput
-                placeholder="Preço"
-                placeholderTextColor="#555"
-                keyboardType="numeric"
-                value={preco}
-                onChangeText={setPreco}
-                style={globalStyles.input}
-            />
+            {!editandoId && (
+                <>
+                    <TextInput
+                        placeholder="Preço"
+                        placeholderTextColor="#555"
+                        keyboardType="numeric"
+                        value={preco}
+                        onChangeText={setPreco}
+                        style={globalStyles.input}
+                    />
 
-            <TextInput
-                placeholder="Quantidade em estoque"
-                placeholderTextColor="#555"
-                keyboardType="numeric"
-                value={estoque}
-                onChangeText={setEstoque}
-                style={globalStyles.input}
-            />
+                    <TextInput
+                        placeholder="Quantidade em estoque"
+                        placeholderTextColor="#555"
+                        keyboardType="numeric"
+                        value={estoque}
+                        onChangeText={setEstoque}
+                        style={globalStyles.input}
+                    />
+                </>
+            )}
 
             <TouchableOpacity
                 style={globalStyles.botao}
-                onPress={adicionarProduto}
+                onPress={salvarProduto}
             >
                 <Text style={globalStyles.botaoTexto}>
-                    Adicionar Produto
+                    {editandoId ? "Salvar Nome" : "Adicionar Produto"}
                 </Text>
             </TouchableOpacity>
 
@@ -70,9 +121,56 @@ export default function Produtos() {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <View style={globalStyles.card}>
-                        <Text style={globalStyles.cardTitulo}>
-                            {item.nome}
-                        </Text>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: 10,
+                            }}
+                        >
+                            <Text style={globalStyles.cardTitulo}>
+                                {item.nome}
+                            </Text>
+
+                            <View style={{ flexDirection: "row", gap: 6 }}>
+                                <TouchableOpacity
+                                    style={[
+                                        globalStyles.botao,
+                                        {
+                                            paddingVertical: 6,
+                                            paddingHorizontal: 10,
+                                            marginBottom: 0,
+                                            backgroundColor: "#f9a825",
+                                        },
+                                    ]}
+                                    onPress={() => iniciarEdicao(item)}
+                                >
+                                    <Text style={globalStyles.botaoTexto}>
+                                        Editar
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        globalStyles.botao,
+                                        {
+                                            paddingVertical: 6,
+                                            paddingHorizontal: 10,
+                                            marginBottom: 0,
+                                            backgroundColor: item.ativo
+                                                ? "#d32f2f"
+                                                : "#2e7d32",
+                                        },
+                                    ]}
+                                    onPress={() => alternarStatus(item.id)}
+                                >
+                                    <Text style={globalStyles.botaoTexto}>
+                                        {item.ativo ? "Desativar" : "Ativar"}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
 
                         <Text style={globalStyles.cardPreco}>
                             {item.preco.toLocaleString("pt-BR", {
@@ -89,7 +187,7 @@ export default function Produtos() {
                                     : globalStyles.estoqueEsgotado,
                             ]}
                         >
-                            Estoque: {item.estoque} unidades
+                            Estoque: {item.estoque}
                         </Text>
                     </View>
                 )}
