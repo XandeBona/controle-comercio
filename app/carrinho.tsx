@@ -6,9 +6,16 @@ import {
     View,
 } from "react-native";
 
+import * as Crypto from "expo-crypto";
+
 import { useCarrinho } from "../context/CarrinhoContext";
 import { useProdutos } from "../context/ProdutosContext";
 import { globalStyles } from "../styles/globalStyles";
+
+import {
+    criarVenda,
+    inserirItemVenda,
+} from "../database/vendasRepository";
 
 export default function Carrinho() {
     const {
@@ -21,7 +28,23 @@ export default function Carrinho() {
     const { produtos, atualizarEstoque } = useProdutos();
 
     function executarVenda() {
+        const vendaId = Crypto.randomUUID();
+        const data = new Date().toISOString();
+
+        // 1️⃣ Criar registro da venda
+        criarVenda(vendaId, data, total);
+
+        // 2️⃣ Inserir itens + atualizar estoque
         carrinho.forEach(item => {
+            inserirItemVenda(
+                Crypto.randomUUID(),
+                vendaId,
+                item.id,
+                item.nome,
+                item.quantidade,
+                item.preco
+            );
+
             const produto = produtos.find(p => p.id === item.id);
             if (produto) {
                 atualizarEstoque(
@@ -43,13 +66,10 @@ export default function Carrinho() {
 
         Alert.alert(
             "Confirmar Venda",
-            `Total da venda:\n\n${total.toLocaleString(
-                "pt-BR",
-                {
-                    style: "currency",
-                    currency: "BRL",
-                }
-            )}`,
+            `Total da venda:\n\n${total.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+            })}`,
             [
                 { text: "Cancelar", style: "cancel" },
                 { text: "Confirmar", onPress: executarVenda },
