@@ -11,7 +11,11 @@ export type Produto = {
 type ProdutosContextType = {
   produtos: Produto[];
   adicionarProduto: (produto: Produto) => void;
-  editarProduto: (id: string, novoNome: string) => void;
+  editarProduto: (
+    id: string,
+    novoNome: string,
+    novoEstoque: number
+  ) => void;
   atualizarEstoque: (id: string, novoEstoque: number) => void;
   alternarStatus: (id: string) => void;
 };
@@ -40,10 +44,16 @@ export function ProdutosProvider({ children }: { children: ReactNode }) {
     setProdutos(prev => [...prev, produto]);
   }
 
-  function editarProduto(id: string, novoNome: string) {
+  function editarProduto(
+    id: string,
+    novoNome: string,
+    novoEstoque: number
+  ) {
     setProdutos(prev =>
       prev.map(prod =>
-        prod.id === id ? { ...prod, nome: novoNome } : prod
+        prod.id === id
+          ? { ...prod, nome: novoNome, estoque: novoEstoque }
+          : prod
       )
     );
   }
@@ -51,7 +61,9 @@ export function ProdutosProvider({ children }: { children: ReactNode }) {
   function atualizarEstoque(id: string, novoEstoque: number) {
     setProdutos(prev =>
       prev.map(prod =>
-        prod.id === id ? { ...prod, estoque: novoEstoque } : prod
+        prod.id === id
+          ? { ...prod, estoque: novoEstoque }
+          : prod
       )
     );
   }
@@ -59,7 +71,9 @@ export function ProdutosProvider({ children }: { children: ReactNode }) {
   function alternarStatus(id: string) {
     setProdutos(prev =>
       prev.map(prod =>
-        prod.id === id ? { ...prod, ativo: !prod.ativo } : prod
+        prod.id === id
+          ? { ...prod, ativo: !prod.ativo }
+          : prod
       )
     );
   }

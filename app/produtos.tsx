@@ -37,9 +37,20 @@ export default function Produtos() {
         }
 
         if (editandoId) {
-            // EDITA APENAS O NOME
-            editarProduto(editandoId, nome);
-            Alert.alert("Sucesso", "Nome atualizado!");
+            if (!estoque) {
+                Alert.alert("Erro", "Digite o estoque.");
+                return;
+            }
+
+            const estoqueConvertido = parseInt(estoque);
+
+            if (isNaN(estoqueConvertido)) {
+                Alert.alert("Erro", "Estoque inválido.");
+                return;
+            }
+
+            editarProduto(editandoId, nome, estoqueConvertido);
+            Alert.alert("Sucesso", "Produto atualizado!");
         } else {
             if (!preco || !estoque) {
                 Alert.alert("Erro", "Preencha todos os campos.");
@@ -70,6 +81,7 @@ export default function Produtos() {
 
     function iniciarEdicao(produto: any) {
         setNome(produto.nome);
+        setEstoque(produto.estoque.toString());
         setEditandoId(produto.id);
     }
 
@@ -85,34 +97,34 @@ export default function Produtos() {
                 style={globalStyles.input}
             />
 
+            {/* Preço só aparece ao criar produto */}
             {!editandoId && (
-                <>
-                    <TextInput
-                        placeholder="Preço"
-                        placeholderTextColor="#555"
-                        keyboardType="numeric"
-                        value={preco}
-                        onChangeText={setPreco}
-                        style={globalStyles.input}
-                    />
-
-                    <TextInput
-                        placeholder="Quantidade em estoque"
-                        placeholderTextColor="#555"
-                        keyboardType="numeric"
-                        value={estoque}
-                        onChangeText={setEstoque}
-                        style={globalStyles.input}
-                    />
-                </>
+                <TextInput
+                    placeholder="Preço"
+                    placeholderTextColor="#555"
+                    keyboardType="numeric"
+                    value={preco}
+                    onChangeText={setPreco}
+                    style={globalStyles.input}
+                />
             )}
+
+            {/* Estoque aparece sempre */}
+            <TextInput
+                placeholder="Quantidade em estoque"
+                placeholderTextColor="#555"
+                keyboardType="numeric"
+                value={estoque}
+                onChangeText={setEstoque}
+                style={globalStyles.input}
+            />
 
             <TouchableOpacity
                 style={globalStyles.botao}
                 onPress={salvarProduto}
             >
                 <Text style={globalStyles.botaoTexto}>
-                    {editandoId ? "Salvar Nome" : "Adicionar Produto"}
+                    {editandoId ? "Salvar Alterações" : "Adicionar Produto"}
                 </Text>
             </TouchableOpacity>
 
