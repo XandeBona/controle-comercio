@@ -1,3 +1,5 @@
+import { useProdutos } from "@/context/ProdutosContext";
+import { globalStyles } from "@/styles/globalStyles";
 import React, { useState } from "react";
 import {
     Alert,
@@ -7,8 +9,6 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { useProdutos } from "../context/ProdutosContext";
-import { globalStyles } from "../styles/globalStyles";
 
 export default function Produtos() {
     const [nome, setNome] = useState("");
@@ -97,7 +97,6 @@ export default function Produtos() {
                 style={globalStyles.input}
             />
 
-            {/* Preço só aparece ao criar produto */}
             {!editandoId && (
                 <TextInput
                     placeholder="Preço"
@@ -109,7 +108,6 @@ export default function Produtos() {
                 />
             )}
 
-            {/* Estoque aparece sempre */}
             <TextInput
                 placeholder="Quantidade em estoque"
                 placeholderTextColor="#555"

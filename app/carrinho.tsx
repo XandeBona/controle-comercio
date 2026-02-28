@@ -8,9 +8,9 @@ import {
 
 import * as Crypto from "expo-crypto";
 
-import { useCarrinho } from "../context/CarrinhoContext";
-import { useProdutos } from "../context/ProdutosContext";
-import { globalStyles } from "../styles/globalStyles";
+import { useCarrinho } from "@/context/CarrinhoContext";
+import { useProdutos } from "@/context/ProdutosContext";
+import { globalStyles } from "@/styles/globalStyles";
 
 import {
     criarVenda,
@@ -31,10 +31,8 @@ export default function Carrinho() {
         const vendaId = Crypto.randomUUID();
         const data = new Date().toISOString();
 
-        // 1️⃣ Criar registro da venda
         criarVenda(vendaId, data, total);
 
-        // 2️⃣ Inserir itens + atualizar estoque
         carrinho.forEach(item => {
             inserirItemVenda(
                 Crypto.randomUUID(),

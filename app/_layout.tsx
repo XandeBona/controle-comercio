@@ -10,10 +10,6 @@ import { CarrinhoProvider } from "../context/CarrinhoContext";
 import { ProdutosProvider } from "../context/ProdutosContext";
 import { initDatabase } from "../database/database";
 
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
@@ -25,8 +21,9 @@ export default function RootLayout() {
     <ProdutosProvider>
       <CarrinhoProvider>
         <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(tabs)" />
             <Stack.Screen
               name="modal"
               options={{ presentation: "modal", title: "Modal" }}

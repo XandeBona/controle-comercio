@@ -8,10 +8,10 @@ import {
   View,
 } from "react-native";
 
+import { useCarrinho } from "@/context/CarrinhoContext";
+import { useProdutos } from "@/context/ProdutosContext";
+import { globalStyles } from "@/styles/globalStyles";
 import { useRouter } from "expo-router";
-import { useCarrinho } from "../context/CarrinhoContext";
-import { useProdutos } from "../context/ProdutosContext";
-import { globalStyles } from "../styles/globalStyles";
 
 export default function Vendas() {
   const router = useRouter();
