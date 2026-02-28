@@ -8,13 +8,19 @@ export default function Index() {
 
       <Link href="/produtos" asChild>
         <TouchableOpacity style={styles.botao}>
-          <Text style={styles.botaoTexto}>Ir para Produtos</Text>
+          <Text style={styles.botaoTexto}>Produtos</Text>
         </TouchableOpacity>
       </Link>
 
       <Link href="/vendas" asChild>
         <TouchableOpacity style={styles.botao}>
-          <Text style={styles.botaoTexto}>Ir para Vendas</Text>
+          <Text style={styles.botaoTexto}>Vendas</Text>
+        </TouchableOpacity>
+      </Link>
+
+      <Link href="/historico" asChild>
+        <TouchableOpacity style={styles.botao}>
+          <Text style={styles.botaoTexto}>Histórico de Vendas</Text>
         </TouchableOpacity>
       </Link>
     </View>
