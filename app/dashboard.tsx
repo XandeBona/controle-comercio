@@ -20,8 +20,6 @@ import { LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-/* ================= FUNÇÕES AUXILIARES ================= */
-
 function formatarInputData(texto: string) {
     const numeros = texto.replace(/\D/g, "");
 
@@ -46,10 +44,8 @@ function subtrairDiasBR(dias: number) {
     return formatarParaBR(data.toISOString().split("T")[0]);
 }
 
-/* ======================================================= */
 
 export default function Dashboard() {
-    /* 🔥 PADRÃO FIXO */
     const [dataInicial, setDataInicial] = useState("01/01/2026");
     const [dataFinal, setDataFinal] = useState(hojeBR());
 
@@ -85,7 +81,6 @@ export default function Dashboard() {
                 vendasPorDia(inicioISO, fimISO)
             );
 
-            /* 🔥 AQUI ESTÁ A CORREÇÃO */
             const top = top5ProdutosPorPeriodo(
                 inicioISO,
                 fimISO
@@ -101,8 +96,6 @@ export default function Dashboard() {
             console.log("Erro ao carregar dashboard:", error);
         }
     }
-
-    /* ================= BOTÕES RÁPIDOS ================= */
 
     function filtroHoje() {
         const hoje = hojeBR();
@@ -125,13 +118,10 @@ export default function Dashboard() {
         setDataFinal("31/12/2026");
     }
 
-    /* =================================================== */
-
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.titulo}>Dashboard</Text>
 
-            {/* FILTRO */}
             <View style={styles.card}>
                 <Text style={styles.label}>Data Inicial</Text>
                 <TextInput
@@ -155,7 +145,6 @@ export default function Dashboard() {
                     maxLength={10}
                 />
 
-                {/* BOTÕES RÁPIDOS */}
                 <View style={styles.botoesRapidos}>
                     <TouchableOpacity
                         style={styles.botaoFiltro}
@@ -187,7 +176,6 @@ export default function Dashboard() {
                 </View>
             </View>
 
-            {/* CARDS */}
             <View style={styles.card}>
                 <Text style={styles.cardTitulo}>
                     Total no Período
@@ -209,7 +197,6 @@ export default function Dashboard() {
                 </Text>
             </View>
 
-            {/* GRÁFICO */}
             {dadosGrafico.length > 0 && (
                 <View style={styles.card}>
                     <Text style={styles.cardTitulo}>
@@ -263,7 +250,6 @@ export default function Dashboard() {
                 </View>
             )}
 
-            {/* TOP 5 PRODUTOS */}
             {topProdutos.length > 0 && (
                 <View style={styles.card}>
                     <Text style={styles.cardTitulo}>
