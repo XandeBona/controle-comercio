@@ -23,6 +23,12 @@ export default function Index() {
           <Text style={styles.botaoTexto}>Histórico de Vendas</Text>
         </TouchableOpacity>
       </Link>
+
+      <Link href="/dashboard" asChild>
+        <TouchableOpacity style={styles.botao}>
+          <Text style={styles.botaoTexto}>Dashboard</Text>
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 }
