@@ -44,7 +44,6 @@ function subtrairDiasBR(dias: number) {
     return formatarParaBR(data.toISOString().split("T")[0]);
 }
 
-
 export default function Dashboard() {
     const [dataInicial, setDataInicial] = useState("01/01/2026");
     const [dataFinal, setDataFinal] = useState(hojeBR());
@@ -119,7 +118,14 @@ export default function Dashboard() {
     }
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={{ flex: 1, backgroundColor: "#f5f6fa" }}
+            contentContainerStyle={{
+                padding: 16,
+                paddingTop: 60,
+                paddingBottom: 40,
+            }}
+        >
             <Text style={styles.titulo}>Dashboard</Text>
 
             <View style={styles.card}>
@@ -256,27 +262,16 @@ export default function Dashboard() {
                         Top 5 Produtos Mais Vendidos
                     </Text>
 
-                    {topProdutos.map(
-                        (produto, index) => (
-                            <View
-                                key={index}
-                                style={styles.itemTop}
-                            >
-                                <Text
-                                    style={styles.nomeProduto}
-                                >
-                                    {index + 1}. {produto.nome}
-                                </Text>
-                                <Text
-                                    style={
-                                        styles.quantidadeProduto
-                                    }
-                                >
-                                    {produto.quantidade} un
-                                </Text>
-                            </View>
-                        )
-                    )}
+                    {topProdutos.map((produto, index) => (
+                        <View key={index} style={styles.itemTop}>
+                            <Text style={styles.nomeProduto}>
+                                {index + 1}. {produto.nome}
+                            </Text>
+                            <Text style={styles.quantidadeProduto}>
+                                {produto.quantidade} un
+                            </Text>
+                        </View>
+                    ))}
                 </View>
             )}
         </ScrollView>
