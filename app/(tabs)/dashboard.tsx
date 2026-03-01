@@ -152,40 +152,26 @@ export default function Dashboard() {
                 />
 
                 <View style={styles.botoesRapidos}>
-                    <TouchableOpacity
-                        style={styles.botaoFiltro}
-                        onPress={filtroHoje}
-                    >
+                    <TouchableOpacity style={styles.botaoFiltro} onPress={filtroHoje}>
                         <Text style={styles.textoBotao}>Hoje</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.botaoFiltro}
-                        onPress={filtro7Dias}
-                    >
+                    <TouchableOpacity style={styles.botaoFiltro} onPress={filtro7Dias}>
                         <Text style={styles.textoBotao}>7 dias</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.botaoFiltro}
-                        onPress={filtro30Dias}
-                    >
+                    <TouchableOpacity style={styles.botaoFiltro} onPress={filtro30Dias}>
                         <Text style={styles.textoBotao}>30 dias</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.botaoFiltro}
-                        onPress={filtroAnoCompleto}
-                    >
+                    <TouchableOpacity style={styles.botaoFiltro} onPress={filtroAnoCompleto}>
                         <Text style={styles.textoBotao}>Ano</Text>
                     </TouchableOpacity>
                 </View>
             </View>
 
             <View style={styles.card}>
-                <Text style={styles.cardTitulo}>
-                    Total no Período
-                </Text>
+                <Text style={styles.cardTitulo}>Total no Período</Text>
                 <Text style={styles.valor}>
                     {totalPeriodo.toLocaleString("pt-BR", {
                         style: "currency",
@@ -195,19 +181,13 @@ export default function Dashboard() {
             </View>
 
             <View style={styles.card}>
-                <Text style={styles.cardTitulo}>
-                    Quantidade de Vendas
-                </Text>
-                <Text style={styles.valor}>
-                    {quantidadeVendas}
-                </Text>
+                <Text style={styles.cardTitulo}>Quantidade de Vendas</Text>
+                <Text style={styles.valor}>{quantidadeVendas}</Text>
             </View>
 
             {dadosGrafico.length > 0 && (
                 <View style={styles.card}>
-                    <Text style={styles.cardTitulo}>
-                        Vendas por Dia
-                    </Text>
+                    <Text style={styles.cardTitulo}>Vendas por Dia</Text>
 
                     {valorSelecionado !== null && (
                         <Text style={styles.valorSelecionado}>
@@ -225,9 +205,7 @@ export default function Dashboard() {
                             ),
                             datasets: [
                                 {
-                                    data: dadosGrafico.map(
-                                        (d) => d.total
-                                    ),
+                                    data: dadosGrafico.map((d) => d.total),
                                 },
                             ],
                         }}
